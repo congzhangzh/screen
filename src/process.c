@@ -6013,6 +6013,17 @@ char *AddWindows(WinMsgBufContext *wmbc, int len, int flags, int where)
 	}
 
 	cur = GetWindowByNumber(where);
+	/*
+	 * KillWindow() unlinks a dying window before it switches the canvases
+	 * of every display away from it, and each Activate() on the way
+	 * redraws the hardstatus of all displays. A display handled later
+	 * still has the dying window as D_fore, whose number no longer maps
+	 * to a window: there is nothing before or after it to list.
+	 */
+	if (cur == NULL && (flags & (4 | 8))) {
+		*s = 0;
+		return ss;
+	}
 
 	for (win = (flags & 4) ? cur->w_next : first_window; win; win = win->w_next) {
 		uint64_t rend = 0;
