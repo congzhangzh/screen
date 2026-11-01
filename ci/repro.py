@@ -37,6 +37,18 @@ def drain(fds, secs):
                 fds = [f for f in fds if f != fd]
 
 
+def running(pid):
+    """The process exists and is not a zombie. A crashed screen master is re-parented to
+    PID 1; when PID 1 never reaps (`tail -f /dev/null` in a CI container), /proc/<pid>
+    stays, as a zombie, so its mere existence does not mean the session survived."""
+    try:
+        with open(f"/proc/{pid}/stat") as f:
+            state = f.read().rsplit(")", 1)[1].split()[0]
+    except OSError:
+        return False
+    return state not in ("Z", "X")
+
+
 def session_pid(env, name):
     out = subprocess.run([SCREEN, "-ls"], env=env, capture_output=True, text=True).stdout
     for line in out.splitlines():
@@ -68,7 +80,7 @@ def one_run(i, base):
     # The shell in window 1 exits, as when someone types exit in that pane.
     subprocess.run([SCREEN, "-S", name, "-p", "1", "-X", "stuff", "exit\n"], env=env)
     drain(fds, 1.5)
-    alive = master is not None and os.path.exists(f"/proc/{master}")
+    alive = master is not None and running(master)
     if alive:
         q = subprocess.run([SCREEN, "-S", name, "-Q", "windows"], env=env,
                            capture_output=True, text=True, timeout=5)
