@@ -60,6 +60,12 @@ def session_pid(env, name):
 
 def one_run(i, base):
     sockdir = os.path.join(base, f"sock{i}")
+    # A Unix socket path holds at most 107 bytes (sun_path is 108 with its NUL); screen
+    # names the socket <pid>.<name>, with a pid of up to 7 digits. Longer, and the server
+    # cannot start (since upstream 15a1481 it panics "Socket path too long.").
+    longest = len(os.fsencode(sockdir)) + len(f"/1234567.repro{i}")
+    if longest > 107:
+        sys.exit(f"work dir too deep for a screen socket ({longest} > 107 bytes): {sockdir}")
     os.mkdir(sockdir, 0o700)
     rc = os.path.join(base, "screenrc")
     env = dict(os.environ, SCREENDIR=sockdir, TERM="xterm-256color", HOME=base)
