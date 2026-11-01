@@ -75,8 +75,10 @@ Actions tab (or `gh workflow run release.yml -f pick=true`), runs
 3. [`ci/test.sh`](ci/test.sh) runs [`ci/repro.py`](ci/repro.py) as a normal user: the build
    must survive 10 runs with two displays and 3 with one, and the control must crash at least
    once, or the test no longer reproduces the bug;
-4. with `pick`, and only when every test passed, it pushes `release-<YYYYMMDD>.<N>` and
-   publishes the GitHub Release. Without `pick` the build is kept as a workflow artifact.
+4. with `pick`, and only when every test passed,
+   [`ci/publish-release.py`](ci/publish-release.py) makes a draft release with the assets,
+   pushes `release-<YYYYMMDD>.<N>`, then publishes the release (which creates its tag), so a
+   failure leaves at most a draft. Without `pick` the build is kept as a workflow artifact.
 
 The packaging in [`packaging/debian`](packaging/debian) is Debian's screen 5.0.2-1
 (<https://tracker.debian.org/pkg/screen>), unchanged except that its patch series drops the

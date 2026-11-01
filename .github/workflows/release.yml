@@ -29,6 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     container: debian:testing
     timeout-minutes: 30
+    defaults:
+      run:
+        # A container job's default shell is sh (dash); the steps use bash.
+        shell: bash
     steps:
       - name: Get the pipeline and the screen source
         env:
@@ -74,7 +78,6 @@ jobs:
           REF: ${{ inputs.ref }}
           CONTROL: ${{ inputs.control }}
         run: |
-          apt-get install -y -q --no-install-recommends gh > /dev/null
           . out/build.env
           base=$(git -C screen merge-base "$SHA" "origin/$CONTROL")
           deb=$(cd out && ls screen_*_amd64.deb)
@@ -106,7 +109,5 @@ jobs:
           cat out/notes.md
           git -C screen config http.https://github.com/.extraheader \
             "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
-          git -C screen push origin "$SHA:refs/heads/$NAME"
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$SHA" \
-            --title "screen $version" --notes-file out/notes.md \
-            out/*.deb out/*.tar.gz out/SHA256SUMS
+          python3 -I pipe/ci/publish-release.py screen "$TAG" "$SHA" "$NAME" \
+            "screen $version" out/notes.md out/*.deb out/*.tar.gz out/SHA256SUMS
