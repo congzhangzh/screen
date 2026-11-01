@@ -1,5 +1,0 @@
-Version: 5
-
-Source: https://ftp.gnu.org/gnu/screen/
-Matching-Pattern: screen-([\d\.]+)\.tar\.gz
-Pgp-Sig-Url-Mangle: s/$/.sig/
