@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Mirror upstream GNU screen's branches and tags into this repo, and leave our own
-# branches (github, fix-*) alone.
+# branches (github, fix-*, integration-*, release-*) alone.
 #
 # Usage: sync.sh <upstream url> <destination url>
 # PUSH_TOKEN, when set, authenticates the push to github.com (the workflow passes
@@ -10,7 +10,7 @@ set -euo pipefail
 src=$1 dst=$2
 
 # Branch names that belong to this repo; an upstream branch of the same name is skipped.
-ours() { [[ $1 == github || $1 == fix-* ]]; }
+ours() { [[ $1 == github || $1 == fix-* || $1 == integration-* || $1 == release-* ]]; }
 
 GIT_DIR=$(mktemp -d)
 export GIT_DIR
