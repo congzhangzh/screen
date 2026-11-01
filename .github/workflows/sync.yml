@@ -1,0 +1,27 @@
+name: Sync from Savannah
+
+# Scheduled workflows run only from the default branch, which is why this repo's
+# default branch is `github` and not one of upstream's.
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Mirror upstream branches and tags
+        env:
+          PUSH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone -q --depth 1 --branch "$GITHUB_REF_NAME" "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" self
+          bash self/.github/sync.sh https://git.savannah.gnu.org/git/screen.git \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
