@@ -53,6 +53,15 @@
 #define A_BL	(1<<ATTR_BL)
 #define A_IT	(1<<ATTR_IT)
 
+/* Spare bits in the packed rendition encode attribute operations. */
+#define REND_ADD	((uint64_t)1 << 51)
+#define REND_SUB	((uint64_t)1 << 55)
+#define REND_XOR	(REND_ADD | REND_SUB)
+#define REND_SET	((uint64_t)1 << 63)
+/* Colour mode 3 preserves the current foreground/background. */
+#define REND_KEEP_FG	((uint64_t)3 << 48)
+#define REND_KEEP_BG	((uint64_t)3 << 52)
+
 #define ATYP_M		(1<<0)
 #define ATYP_S		(1<<1)
 #define ATYP_U		(1<<2)

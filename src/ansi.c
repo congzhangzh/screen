@@ -69,9 +69,9 @@ struct mchar mchar_so = { ' ', A_RV, 0, 0, 0, 0};
 
 /* Default bell/monitor/silence renditions in ParseAttrColor() encoding. */
 uint64_t renditions[NUM_RENDS] = {
-	((uint64_t)(A_US | A_BD) << 56),	/* bell: ub */
-	((uint64_t)A_BD << 56),		/* monitor: b */
-	((uint64_t)A_US << 56)		/* silence: u */
+	((uint64_t)(A_US | A_BD) << 56) | REND_KEEP_FG | REND_KEEP_BG,	/* bell: =ub */
+	((uint64_t)A_BD << 56) | REND_KEEP_FG | REND_KEEP_BG,	/* monitor: =b */
+	((uint64_t)A_US << 56) | REND_KEEP_FG | REND_KEEP_BG	/* silence: =u */
 };
 
 /* keep string_t and string_t_string in sync! */

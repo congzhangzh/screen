@@ -7243,7 +7243,7 @@ void RefreshXtermOSC(void)
  */
 uint64_t ParseAttrColor(char *str, int msgok)
 {
-	uint64_t r;
+	uint64_t r = 0;
 
 	uint32_t attr = 0;
 	uint32_t bg = 0, fg = 0;
@@ -7253,6 +7253,29 @@ uint64_t ParseAttrColor(char *str, int msgok)
 	uint8_t *cm;
 	cl = &fg;
 	cm = &fm;
+
+	while (*str == ' ')
+		str++;
+	switch (*str) {
+	case '+':
+		r = REND_ADD;
+		break;
+	case '-':
+		/* A leading '-' without attributes still resets a colour. */
+		if (str[1] && strchr("dubril", str[1]))
+			r = REND_SUB;
+		break;
+	case '!':
+		r = REND_XOR;
+		break;
+	case '=':
+		r = REND_SET;
+		break;
+	}
+	if (r) {
+		str++;
+		fm = bm = 3;
+	}
 
 	while (*str) {
 		if (*cm < 4) {
@@ -7293,7 +7316,7 @@ uint64_t ParseAttrColor(char *str, int msgok)
 			case '7':
 			case '8':
 			case '9':
-				if (!*cm) *cm = 1;
+				if (!*cm || *cm == 3) *cm = 1;
 				*cl = *cl * 10 + (*str - '0');
 				break;
 			case ';':
@@ -7388,7 +7411,7 @@ uint64_t ParseAttrColor(char *str, int msgok)
 		}
 	}
 
-	r = (((uint64_t)attr & 0x0FF) << 56);
+	r |= (((uint64_t)attr & 0x0FF) << 56);
 
 	r |= (((uint64_t)bg & 0x0FFFFFF) << 24);
 	r |= ((uint64_t)fg & 0x0FFFFFF);
@@ -7405,16 +7428,17 @@ uint64_t ParseAttrColor(char *str, int msgok)
  *	xx 00 00 00 00 00 00 00 - attr
  *	00 x0 00 00 00 00 00 00 - what kind of background
  *	00 0x 00 00 00 00 00 00 - what kind of foreground
- *	                          0 - default, 1 - base 16; 2 - 256, 4 - truecolor
+ *	                          0 - default, 1 - base 16; 2 - 256, 3 - keep, 4 - truecolor
  *	00 00 xx xx xx 00 00 00 - background
  *	00 00 00 00 00 xx xx xx - foreground
+ *	Spare bits encode REND_ADD/SUB/XOR/SET (see ansi.h).
  *	mc -structure to modify
  */
 void ApplyAttrColor(uint64_t i, struct mchar *mc)
 {
 	uint32_t a, b, f;
 	unsigned char h;
-	a = (0xFF00000000000000 & i) >> 56;
+	a = (0x7F00000000000000 & i) >> 56;
 	b = (0x0000FFFFFF000000 & i) >> 24;
 	f = (0x0000000000FFFFFF & i);
 
@@ -7427,7 +7451,21 @@ void ApplyAttrColor(uint64_t i, struct mchar *mc)
 	if (h & 0x02) f |= 0x02000000;
 	if (h & 0x01) f |= 0x01000000;
 	
-	mc->attr	= a;
-	mc->colorbg	= b;
-	mc->colorfg	= f;
+	switch (i & REND_XOR) {
+	case REND_ADD:
+		mc->attr |= a;
+		break;
+	case REND_SUB:
+		mc->attr &= ~a;
+		break;
+	case REND_XOR:
+		mc->attr ^= a;
+		break;
+	default:
+		mc->attr = a;
+	}
+	if ((i & REND_KEEP_BG) != REND_KEEP_BG)
+		mc->colorbg = b;
+	if ((i & REND_KEEP_FG) != REND_KEEP_FG)
+		mc->colorfg = f;
 }
