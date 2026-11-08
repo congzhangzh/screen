@@ -3085,13 +3085,15 @@ Unlinks the screen-exchange file used by the commands
 \fBwritebuf\fP and \fBreadbuf\fP.
 .RE
 .TP
-.B "rendition [ bell | monitor | silence | so ] attr [ color ]"
+.B "rendition (bell | monitor | silence | so) format"
 .RS 0
 .PP
 Change the way
 .I screen
-renders the titles of windows that have monitor or bell flags set in
-caption or hardstatus or windowlist. See the \*QSTRING ESCAPES\*U
+renders the titles of windows that have monitor, bell or silence flags set in
+caption, hardstatus or windowlist. The \*Qso\*U setting controls message
+and selection highlighting. Quote the format if it contains spaces.
+See the \*QSTRING ESCAPES\*U
 chapter for the syntax of the modifiers.
 The default for monitor is currently \*Q=b \*U (bold, active colors),
 for bell \*Q=ub \*U (underline, bold and active colors), and \*Q=u \*U
@@ -3354,7 +3356,7 @@ startup and reattach time, so they must be reached via the
 default screenrc files to have an effect.
 .RE
 .TP
-.IR "\fBsorendition\fR " [ attr [ color ]]
+.IR "\fBsorendition\fR " [ format ]
 .RS 0
 .PP
 This command is deprecated. See "rendition so" instead.
@@ -4135,9 +4137,8 @@ if 'L' is given.
 .PP
 An attribute/color modifier is used to change the attributes or the
 color settings. Its format
-is \*Q[attribute modifier] [color description]\*U. The attribute modifier
-must be prefixed by a change type indicator if it can be confused with
-a color description. The following change types are known:
+is \*Q[attribute modifier] [color description]\*U.
+The following change types are known:
 .IP +
 add the specified set to the current attributes
 .IP \-
@@ -4147,8 +4148,9 @@ invert the set in the current attributes
 .IP =
 change the current attributes to the specified set
 .PP
-The attribute set can either be specified as a hexadecimal number or
-a combination of the following letters:
+Without a change-type prefix, attributes are replaced and unspecified
+colors reset; with a prefix, unspecified colors are preserved.
+The attribute set is a combination of the following letters:
 .IP d
 dim
 .PD 0
@@ -4158,18 +4160,17 @@ underline
 bold
 .IP r
 reverse
-.IP s
-standout
-.IP B
+.IP i
+italic
+.IP l
 blinking
 .PD
 .PP
-The old format of specifying colors by letters (k,r,g,y,b,m,c,w) is now
-deprecated. Colors are coded as 0-7 for basic ANSI, 0-255 for 256 color
+Colors are coded as 0-7 for basic ANSI, 0-255 for 256 color
 mode, or for truecolor, either a hexadecimal code starting with x, or
 HTML notation as either 3 or 6 hexadecimal digits. Foreground and background
-are specified by putting a semicolon between them. Ex: \*Q#FFF;#000\*U or
-\*Qi7;0\*U is white on a black background.
+are specified by putting a semicolon between them. Ex: \*Q#FFFFFF;#000000\*U or
+\*Q7;0\*U is white on a black background.
 .PP
 The following numbers are for basic ANSI:
 .IP 0
@@ -4191,25 +4192,25 @@ cyan
 white
 .PD
 .PP
-You can also use the pseudo-color 'i' to set just the brightness and
-leave the color unchanged.
+Use \*Q\-\*U to reset a foreground or background color to its terminal
+default.
 .br
 As a special case, \*Q%{\-}\*U restores the attributes and colors that
 were set before the last change was made (i.e., pops one level of the
 color-change stack).
 .PP
 Examples:
-.IP "\*Qi2\*U"
+.IP "\*Q10\*U"
 set color to bright green
-.IP "\*Q+b r\*U"
+.IP "\*Q+b 1\*U"
 use bold red
-.IP "\*Q#F00;FFA\*U"
+.IP "\*Q#F00;#FFA\*U"
 write in bright red color on a pale yellow background.
 .IP "%\-Lw%{#AAA;#006}%50>%n%f* %t%{\-}%+Lw%<"
 The available windows centered at the current window and truncated to
 the available width. The current window is displayed white on blue.
 This can be used with \*Qhardstatus alwayslastline\*U.
-.IP "%?%F%{;2}%?%3n %t%? [%h]%?"
+.IP "%?%F%{;1}%?%3n %t%? [%h]%?"
 The window number and title and the window's hardstatus, if one is set.
 Also use a red background if this is the active focus. Useful for
 \*Qcaption string\*U.
