@@ -7381,7 +7381,7 @@ uint64_t ParseAttrColor(char *str, int msgok)
 	 *       about upper boundaries.
 	 */
 	if (fm == 4) {
-		if (fg <= 0x03000000)
+		if ((fg & 0x0F000000) == 0x03000000)
 		{
 			fg &= 0x0FFF;
 			fg = ((fg & 0x0F00) << 8) | ((fg & 0x0F0) << 4) | (fg & 0x0F);
@@ -7396,7 +7396,7 @@ uint64_t ParseAttrColor(char *str, int msgok)
 		}
 	}
 	if (bm == 4) {
-		if (bg <= 0x03000000)
+		if ((bg & 0x0F000000) == 0x03000000)
 		{
 			bg &= 0x0FFF;
 			bg = ((bg & 0x0F00) << 8) | ((bg & 0x0F0) << 4) | (bg & 0x0F);
