@@ -877,7 +877,12 @@ void FreeWindow(Window *window)
 	}
 	if (window->w_savelayer)
 		KillLayerChain(window->w_savelayer);
-	for (Canvas *canvas = window->w_layer.l_cvlist; canvas; canvas = canvas->c_lnext) {
+	/* Save the successor before the body runs: the body clears c_lnext,
+	 * so reading it afterwards ends the walk after the first canvas and
+	 * leaves every remaining canvas with c_layer pointing into the
+	 * window that is about to be freed. */
+	for (Canvas *canvas = window->w_layer.l_cvlist, *next_canvas = NULL; canvas; canvas = next_canvas) {
+		next_canvas = canvas->c_lnext;
 		canvas->c_layer = &canvas->c_blank;
 		canvas->c_blank.l_cvlist = canvas;
 		canvas->c_lnext = NULL;
