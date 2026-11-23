@@ -1,3 +1,12 @@
+Version 5.0.3 (25/11/26):
+  * Fixes:
+	- encoding fixes
+	- restore rendition attribute modifiers (bug #67154)
+	- Fix uninitialized buffer with padding escapes
+	- Fix off-by-one in resize CheckMaxSize guard
+	- manpage: correct rendition syntax and examples
+	- security: add SocketPath size check
+
 Version 5.0.2 (12/07/26):
   * Add %* escape to output caret character literal ("^")
   * Add portable PAM conversation callback prototype (for Solaris)
